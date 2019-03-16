@@ -1,9 +1,12 @@
-package pack1;
+package com.evanquan.agrippaTerminalGUI;
 
 import com.googlecode.lanterna.Symbols;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TextCharacter;
 import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.graphics.TextGraphics;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
@@ -14,12 +17,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.googlecode.lanterna.input.KeyType.Escape;
+
 /**
  * Represents the terminal window.
  */
-public class ImportMe {
+public class TerminalWindow {
     private Terminal terminal;
     private Screen screen;
+    private TextGraphics tg;
     private TextColor foregroundColor, backgroundColor;
     private TextColor borderColor = TextColor.ANSI.YELLOW;
 
@@ -29,7 +35,7 @@ public class ImportMe {
     private int[] posX = {3, 8, 25, 70};
     private String[] labels = {"#", "Label 1", "Label 2", "Label 3"};
 
-    public ImportMe() {
+    public TerminalWindow() {
         try {
             initialize();
         } catch (IOException e) {
@@ -40,6 +46,7 @@ public class ImportMe {
     private void initialize() throws IOException {
         terminal = new DefaultTerminalFactory().createTerminal();
         screen = new TerminalScreen(terminal);
+        tg = screen.newTextGraphics();
         foregroundColor = TextColor.ANSI.RED;
         backgroundColor = TextColor.ANSI.BLACK;
     }
@@ -50,24 +57,25 @@ public class ImportMe {
         screen.setCursorPosition(null);
 
         // Adjust dimension valuse for zero indexes.
+        screen.doResizeIfNecessary();
         width = screen.getTerminalSize().getColumns() - 1;
         height = screen.getTerminalSize().getRows() - 1;
 
         // Clearing the screen, creating header & footer with inverted colors
         screen.clear();
 
-        screen.newTextGraphics().drawLine(0, 0, width, 0,
+        tg.drawLine(0, 0, width, 0,
                 new TextCharacter(' ')
                         .withBackgroundColor(foregroundColor)
                         .withForegroundColor(backgroundColor));
-        screen.newTextGraphics().drawLine(0, height, width, height,
+        tg.drawLine(0, height, width, height,
                 new TextCharacter(' ')
                         .withBackgroundColor(foregroundColor)
                         .withForegroundColor(backgroundColor));
-        screen.newTextGraphics().setBackgroundColor(foregroundColor)
+        tg.setBackgroundColor(foregroundColor)
                 .setForegroundColor(backgroundColor)
                 .putCSIStyledString(0, 0, header);
-        screen.newTextGraphics().setBackgroundColor(foregroundColor)
+        tg.setBackgroundColor(foregroundColor)
                 .setForegroundColor(backgroundColor)
                 .putCSIStyledString(0, height, footer);
 
@@ -87,41 +95,45 @@ public class ImportMe {
         drawLineBox();
 
         screen.refresh();
+
+
     }
 
     private void drawLineBox() {
-        screen.newTextGraphics()
+        tg.setBackgroundColor(backgroundColor);
+        tg
                 .setForegroundColor(borderColor)
                 .setCharacter(0, 1, Symbols.DOUBLE_LINE_TOP_LEFT_CORNER);
-        screen.newTextGraphics()
+        tg
                 .drawLine(1, 1, width - 1, 1,
                         new TextCharacter(Symbols.DOUBLE_LINE_HORIZONTAL)
                                 .withForegroundColor(borderColor));
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(width, 1, Symbols.DOUBLE_LINE_TOP_RIGHT_CORNER);
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(0, 2, Symbols.DOUBLE_LINE_VERTICAL);
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(width, 2, Symbols.DOUBLE_LINE_VERTICAL);
+        tg.setForegroundColor(borderColor).setCharacter(width, 1,
+                Symbols.DOUBLE_LINE_TOP_RIGHT_CORNER);
+        tg.setForegroundColor(borderColor).setCharacter(0, 2, Symbols.DOUBLE_LINE_VERTICAL);
+        tg.setForegroundColor(borderColor).setCharacter(width, 2, Symbols.DOUBLE_LINE_VERTICAL);
 
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(0
+        tg.setForegroundColor(borderColor).setCharacter(0
                 , 3, Symbols.DOUBLE_LINE_T_RIGHT);
-        screen.newTextGraphics().drawLine(1, 3, width-1, 3, new TextCharacter(Symbols.DOUBLE_LINE_HORIZONTAL)
+        tg.drawLine(1, 3, width-1, 3, new TextCharacter(Symbols.DOUBLE_LINE_HORIZONTAL)
                 .withForegroundColor(borderColor));
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(width, 3, Symbols.DOUBLE_LINE_T_LEFT);
+        tg.setForegroundColor(borderColor).setCharacter(width, 3, Symbols.DOUBLE_LINE_T_LEFT);
 
-        screen.newTextGraphics().drawLine(0, 4, 0, height-3, new TextCharacter(Symbols.DOUBLE_LINE_VERTICAL)
+        tg.drawLine(0, 4, 0, height-3, new TextCharacter(Symbols.DOUBLE_LINE_VERTICAL)
                 .withForegroundColor(borderColor));
-        screen.newTextGraphics().drawLine(width, 4, width, height-3, new TextCharacter(Symbols.DOUBLE_LINE_VERTICAL)
+        tg.drawLine(width, 4, width, height-3, new TextCharacter(Symbols.DOUBLE_LINE_VERTICAL)
                 .withForegroundColor(borderColor));
 
         //DOUBLE_LINE_BOTTOM_LEFT_CORNER
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(0,
+        tg.setForegroundColor(borderColor).setCharacter(0,
                 height-2, Symbols.DOUBLE_LINE_BOTTOM_LEFT_CORNER);
-        screen.newTextGraphics().drawLine(1, height-2, width-1, height-2, new TextCharacter(Symbols.DOUBLE_LINE_HORIZONTAL)
+        tg.drawLine(1, height-2, width-1, height-2, new TextCharacter(Symbols.DOUBLE_LINE_HORIZONTAL)
                 .withForegroundColor(borderColor));
-        screen.newTextGraphics().setForegroundColor(borderColor).setCharacter(width,
+        tg.setForegroundColor(borderColor).setCharacter(width,
                 height-2, Symbols.DOUBLE_LINE_BOTTOM_RIGHT_CORNER);
 
         // Highest temperature statistic
-        screen.newTextGraphics().putString(posX[0], height-1, "Highest Temperature Record: ");
+        tg.putString(posX[0], height-1, "Highest Temperature Record: ");
     }
 
 
@@ -151,9 +163,12 @@ public class ImportMe {
 
     public void start() throws IOException {
         screen.startScreen();
-        setup();
-        drawUI(" SSI TERMINAL v1.0", " ESC: Quit ");
-        terminal.readInput();
+        // setup();
+        KeyStroke stroke;
+        do {
+            drawUI(" SSI TERMINAL v1.0", " ESC: Quit ");
+            stroke = terminal.pollInput();
+        } while (stroke == null || !stroke.getKeyType().equals(Escape));
         screen.stopScreen();
     }
 
