@@ -28,10 +28,12 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <finalName>Demo</finalName>
+                    <!--<finalName>TerminalWindowTest</finalName>-->
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>Demo</mainClass>
+                            <!--<mainClass>test.com.evanquan.agrippaTerminalGUI.TerminalWindowTest</mainClass>-->
                         </manifest>
                     </archive>
                     <descriptorRefs>
